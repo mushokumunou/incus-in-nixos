@@ -1,0 +1,38 @@
+# site.conf — one file per site; every script/config is rendered from this.
+# Copy to /root/incus-site.conf, fill in, then: scripts/render-site.sh /root/incus-site.conf /root/incus-rendered
+# Only KEY=VALUE (shell syntax). Values must not contain "|".
+
+# --- physical interface that gets bridged into incusbr0 ----------------------
+IFACE=ens18
+
+# --- the host itself ---------------------------------------------------------
+HOSTNAME=nixos              # keep the machine's existing hostname
+HOST_IPV4=10.10.10.50       # host's own IPv4 (ends up on incusbr0)
+LAN_GATEWAY=10.10.10.1      # upstream router (containers' IPv4 default route)
+LAN_PREFIX=10.10.10         # first three octets of the LAN
+
+# --- container IPv4 pool (keep clear of upstream statically-assigned ranges) --
+POOL_V4_START=2
+POOL_V4_END=99
+
+# --- container IPv6 pool: the /112 routed to this host ------------------------
+V6_POOL_PREFIX=2001:db8:1234:5678:9abc:0:50   # first 7 hextets of the routed prefix
+V6_PREFIX_LEN=112
+V6_HOST_SUFFIX_HEX=50       # host's own native /128 inside the pool (HEX) - fixed, never allocated
+V6_BRIDGE_SUFFIX_HEX=1      # pool gateway = the bridge address (usually 1)
+V6_GATEWAY=2001:db8:1234:5678:9abc::1         # upstream IPv6 gateway
+
+# --- optional (defaults shown) ------------------------------------------------
+DNS="1.1.1.1 8.8.8.8"
+SEARCH_DOMAIN=local
+TIMEZONE=Etc/UTC
+STORAGE_DRIVER=btrfs
+CPU_MODULE=kvm-amd          # kvm-amd / kvm-intel / (empty string)
+STATE_VERSION=26.05         # MUST match the machine's current system.stateVersion
+FLAKE_REF=/etc/nixos#nixos  # adjust if hostname differs
+
+# --- Path B defaults ---------------------------------------------------------
+IMAGE=images:debian/13
+DEFAULT_CPU=4
+DEFAULT_MEMORY=4GiB
+DEFAULT_DISK=10GiB
